@@ -1,0 +1,22 @@
+sismos ultima hora 
+https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson
+
+tudo
+https://www.gdacs.org/gdacsapi/swagger/index.html
+
+ultimas 24 horas
+https://www.gdacs.org/gdacsapi/api/events/geteventlist/SEARCH
+
+https://www.gdacs.org/gdacsapi/api/events/geteventlist/statistic
+
+Código	Significado
+EQ	Earthquakes (Terremotos)
+FL	Floods (Inundações)
+TC	Tropical Cyclones (Ciclones Tropicais)
+VO	Volcanoes (Vulcões)
+WF	Wild Fires (Incêndios Florestais)
+DR	Droughts (Secas)
+
+nuclear power plant (dá 404)
+https://www.gdacs.org/gdacsapi/api/events/getnpp
+
