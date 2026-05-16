@@ -26,3 +26,51 @@ function processaResposta_do_gdacs( dados )
 
 }
 
+function coordenadasToPixel(latitude, longitude, largura, altura) {
+     const x = ((longitude + 180) / 360) * largura;
+     const y = ((90 - latitude) / 180) * altura;
+     return { x: x, y: y };
+}
+
+const larguraImagem = 10800; // Largura da imagem em pixels
+const alturaImagem = 5400; // Altura da imagem em pixels
+
+larguraNaPagina = 1200; // Largura da imagem na página em pixels
+alturaNaPagina = (alturaImagem / larguraImagem) * larguraNaPagina; // Altura proporcional
+
+
+
+console.log( 'Coordenadas para pixel (lat: 39.23379, long: -8.68617):', coordenadasToPixel(39.23379, -8.68617, larguraNaPagina, alturaNaPagina) );
+
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const imagem = document.getElementById('mapaImagem');
+        
+canvas.width = larguraNaPagina;
+canvas.height = alturaNaPagina;
+
+const { x, y } = coordenadasToPixel(39.23379, -8.68617, larguraNaPagina, alturaNaPagina);
+//console.log( 'Coordenadas para pixel (lat: 39.23379, long: -8.68617):', { x, y } );
+console.log( 'Coordenadas para pixel (lat: 0, long: 0):', { x, y } );
+
+const imgAltura = imagem.height;
+canvas.height = imgAltura;
+canvas.style.height = imgAltura + 'px';
+ctx.clearRect(0, 0, larguraNaPagina, alturaNaPagina);
+desenharPonto(39.23379, -8.68617);
+desenharPonto(0, 0);
+desenharPonto(90, 0);
+desenharPonto(-90, 0);
+desenharPonto(0, 180);
+desenharPonto(0, -180);
+
+
+function desenharPonto(xIn, yIn) {
+     
+     const { x, y } = coordenadasToPixel(xIn, yIn, larguraNaPagina, alturaNaPagina);
+     ctx.beginPath();
+     ctx.arc(x, y, 5, 0, 2 * Math.PI);
+     ctx.fillStyle = 'red';
+     ctx.fill();
+}
