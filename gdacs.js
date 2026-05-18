@@ -57,7 +57,7 @@ function pintaCoisas() {
 }
 
 const larguraImagem = 10800; // Largura da imagem em pixels
-const alturaImagem = 5400; // Altura da imagem em pixels
+const alturaImagem = 5400; // Altura da imagem em pixels 
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
