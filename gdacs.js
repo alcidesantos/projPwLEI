@@ -20,9 +20,17 @@ function gdacsRequest() {
 
 function processaResposta_do_gdacs( dados )
 {
-    console.log( 'Dados da resposta do GDACS:', dados );
-    console.log( 'Array de eventos:', dados.features );
-    console.log( 'dados.features[0].properties.eventtype:', dados.features[0].properties.eventtype );
+     console.log( 'Dados da resposta do GDACS:', dados );
+     console.log( 'Array de eventos:', dados.features );
+     console.log( 'dados.features[0].properties.eventtype:', dados.features[0].properties.eventtype );
+     
+     for (const feature of dados.features) {
+          y = feature.geometry.coordinates[0];
+          x = feature.geometry.coordinates[1];
+          //console.log("x:", x);
+          //console.log("y:", y);
+          desenharPonto(x, y);
+     }
 
 }
 
@@ -46,12 +54,12 @@ function pintaCoisas(larguraNaPagina, alturaNaPagina) {
      canvas.style.width = larguraNaPagina + 'px';
      canvas.style.height = alturaNaPagina + 'px';
      ctx.clearRect(0, 0, larguraNaPagina, alturaNaPagina);
-     desenharPonto(39.23379, -8.68617);
-     desenharPonto(0, 0);
-     desenharPonto(90, 0);
-     desenharPonto(-90, 0);
-     desenharPonto(0, 180);
-     desenharPonto(0, -180);
+     //desenharPonto(39.23379, -8.68617);
+     //desenharPonto(0, 0);
+     //desenharPonto(90, 0);
+     //desenharPonto(-90, 0);
+     //desenharPonto(0, 180);
+     //desenharPonto(0, -180);
 }
 
 const larguraImagem = 10800; // Largura da imagem em pixels
