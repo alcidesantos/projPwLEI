@@ -37,7 +37,7 @@ function desenharPonto(xIn, yIn) {
      ctx.beginPath();
      ctx.arc(x, y, 5, 0, 2 * Math.PI);
      ctx.fillStyle = 'red';
-     ctx.fill();
+     ctx.fill(); 
 }
 
 function pintaCoisas(larguraNaPagina, alturaNaPagina) {
