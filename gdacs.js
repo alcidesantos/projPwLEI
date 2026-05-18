@@ -1,4 +1,14 @@
 
+const cores = new Map();
+cores.set('EQ', 'brown');     // termor de terra: castanho
+cores.set('FL', 'blue');      // inundação: azul
+cores.set('TC', 'DodgerBlue');          // ciclone: azul
+cores.set('VO', 'orange');          // vulcão: laranja
+cores.set('WF', 'red');          // incendio: vermelho
+cores.set('DR', 'yellow');          // seca: amarelo
+
+
+
 gdacsRequest(); 
 
 function gdacsRequest() {
@@ -27,9 +37,11 @@ function processaResposta_do_gdacs( dados )
      for (const feature of dados.features) {
           y = feature.geometry.coordinates[0];
           x = feature.geometry.coordinates[1];
+          cor = feature.properties.eventtype;
+          console.log("cor", cor);
           //console.log("x:", x);
           //console.log("y:", y);
-          desenharPonto(x, y);
+          desenharPonto(x, y, cores.get(cor));
      }
 
 }
@@ -40,11 +52,11 @@ function coordenadasToPixel(latitude, longitude, largura, altura) {
      return { x: x, y: y };
 }
 
-function desenharPonto(xIn, yIn) {
+function desenharPonto(xIn, yIn, cor) {
      const { x, y } = coordenadasToPixel(xIn, yIn, larguraNaPagina, alturaNaPagina);
      ctx.beginPath();
      ctx.arc(x, y, 5, 0, 2 * Math.PI);
-     ctx.fillStyle = 'red';
+     ctx.fillStyle = cor;
      ctx.fill(); 
 }
 
