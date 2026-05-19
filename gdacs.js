@@ -7,6 +7,14 @@ cores.set('VO', 'orange');          // vulcão: laranja
 cores.set('WF', 'red');          // incendio: vermelho
 cores.set('DR', 'yellow');          // seca: amarelo
 
+const descricaoSituacoes = new Map();
+descricaoSituacoes.set('EQ', 'Termor de Terra');     // termor de terra: castanho
+descricaoSituacoes.set('FL', 'Inundação');      // inundação: azul
+descricaoSituacoes.set('TC', 'Ciclone');          // ciclone: azul
+descricaoSituacoes.set('VO', 'Vulcão');          // vulcão: laranja
+descricaoSituacoes.set('WF', 'Incêndio');          // incendio: vermelho
+descricaoSituacoes.set('DR', 'Seca');          // seca: amarelo
+
 let pontos = [];  
 
 const larguraImagem = 10800; // Largura da imagem em pixels
@@ -14,14 +22,6 @@ const alturaImagem = 5400; // Altura da imagem em pixels
 
 const canvas = document.getElementById('canvas');
 const imagem = document.getElementById('mapaImagem');
-let pontoActual = document.getElementById('pontoActual');
-let countryTxt = document.getElementById('country');
-let descriptionTxt = document.getElementById('description');
-let eventtypeTxt = document.getElementById('eventtype');
-let episodealertlevelTxt = document.getElementById('episodealertlevel');
-let eventidTxt = document.getElementById('eventid');
-let fromdateTxt = document.getElementById('fromdate');
-let nomeEventoTxt = document.getElementById('nomeEvento');
 let imgAltura = imagem.height;
 let ctx = canvas.getContext('2d');
 
@@ -43,7 +43,6 @@ function gdacsRequest() {
                //console.log( 'Passou na Linha 38', playlist );
                processaResposta_do_gdacs( casos );
           })
-  
 }
 
 function processaResposta_do_gdacs( dados )
@@ -77,7 +76,7 @@ function processaResposta_do_gdacs( dados )
                description: description,
                eventtype: eventtype,
                episodealertlevel: episodealertlevel,
-               eventid: episodealertlevel,
+               eventid: eventid,
                fromdate: fromdate,
                nomeEvento: nomeEvento
           })
@@ -132,27 +131,19 @@ canvas.addEventListener('mousemove', (e) => {
           if (p.hover && !estavaHover) {
                console.log(`Mouse sobre ponto em (${p.x}, ${p.y})`);
                console.log("p: " + p);
-               console.log("p.country:" + p.country);
-               countryTxt.textContent = p.country;
-               descriptionTxt.textContent = p.description;
-               eventtypeTxt.textContent = p.eventtype;
-               episodealertlevelTxt.textContent = p.episodealertlevel;
-               eventidTxt.textContent = p.eventid;
-               fromdateTxt.textContent = p.fromdate;
-               nomeEventoTxt.textContent = p.nomeEvento;
-               
+               console.log("p.country:" + p.country);               
 
                const conteudo = `
-                    <strong>${p.eventtype}</strong><br>
+                    <strong>${p.description}</strong>
+                    Tipo de Evento: ${descricaoSituacoes.get(p.eventtype)}<br>
                     País: ${p.country}<br>
-                    Severidade: ${p.severitytext}<br>
-                    Data: ${p.fromdate}
+                    Nível de Alerta: ${p.episodealertlevel}<br>
+                    Data: ${p.fromdate}<br>
+                    ID do Evento: ${p.eventid}
                `;
         
                caixaInformacao.innerHTML = conteudo;
                caixaInformacao.style.display = 'block';
-        
-               // Posicionar a tooltip perto do mouse
                caixaInformacao.style.left = (e.clientX + 15) + 'px';
                caixaInformacao.style.top = (e.clientY - 30) + 'px';
           } 
@@ -177,7 +168,6 @@ function pintaCoisas(larguraNaPagina, alturaNaPagina) {
      //desenharPonto(0, -180);
 }
 
-
 mapaImagem.src = "NE2_50M_SR_reduzido.png";
 mapaImagem.onload = function() {
      larguraNaPagina = 1200; // Largura da imagem na página em pixels
@@ -188,18 +178,27 @@ mapaImagem.onload = function() {
 }
     
 const caixaInformacao = document.createElement('div');
-caixaInformacao.style.position = 'absolute';
-caixaInformacao.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-caixaInformacao.style.color = 'white';
-caixaInformacao.style.padding = '8px 12px';
-caixaInformacao.style.borderRadius = '6px';
-caixaInformacao.style.fontSize = '12px';
-caixaInformacao.style.fontFamily = 'Arial, sans-serif';
-caixaInformacao.style.pointerEvents = 'none'; // Para não atrapalhar o mouse
-caixaInformacao.style.zIndex = '1000';
-caixaInformacao.style.display = 'none';
-caixaInformacao.style.maxWidth = '300px';
-caixaInformacao.style.boxShadow = '0 2px 10px rgba(0,0,0,0.3)';
+caixaInformacao.className = 'caixaInformacao';
 document.body.appendChild(caixaInformacao);
+
+let conteudoLegenda = '<strong>Legenda:</strong>';
+
+for (const [codigo, descricao] of descricaoSituacoes) {
+    const cor = cores.get(codigo);
+    conteudoLegenda += `
+        <div style="margin-bottom: 5px;">
+            <span style="display: inline-block; width: 10px; height: 10px; background-color: ${cor}; margin-right: 8px; border: 1px solid #999;"></span>
+            ${descricao}
+        </div>
+    `;
+}
+
+const legenda = document.createElement('div');
+legenda.className = 'legenda';
+document.body.appendChild(legenda);
+legenda.innerHTML = conteudoLegenda;
+legenda.style.display = 'block';
+legenda.style.left = '50px';
+legenda.style.top = '480px';
 
 console.log(pontos);
