@@ -7,7 +7,23 @@ cores.set('VO', 'orange');          // vulcão: laranja
 cores.set('WF', 'red');          // incendio: vermelho
 cores.set('DR', 'yellow');          // seca: amarelo
 
+let pontos = [];  
 
+const larguraImagem = 10800; // Largura da imagem em pixels
+const alturaImagem = 5400; // Altura da imagem em pixels 
+
+const canvas = document.getElementById('canvas');
+const imagem = document.getElementById('mapaImagem');
+let pontoActual = document.getElementById('pontoActual');
+let countryTxt = document.getElementById('country');
+let descriptionTxt = document.getElementById('description');
+let eventtypeTxt = document.getElementById('eventtype');
+let episodealertlevelTxt = document.getElementById('episodealertlevel');
+let eventidTxt = document.getElementById('eventid');
+let fromdateTxt = document.getElementById('fromdate');
+let nomeEventoTxt = document.getElementById('nomeEvento');
+let imgAltura = imagem.height;
+let ctx = canvas.getContext('2d');
 
 gdacsRequest(); 
 
@@ -37,10 +53,32 @@ function processaResposta_do_gdacs( dados )
      for (const feature of dados.features) {
           y = feature.geometry.coordinates[0];
           x = feature.geometry.coordinates[1];
+          
+          country = feature.properties.country;
+          description = feature.properties.description;
+          eventtype = feature.properties.eventtype;
+          episodealertlevel = feature.properties.episodealertlevel;
+          eventid = feature.properties.eventid;
+          fromdate = feature.properties.fromdate;
+          nomeEvento = feature.properties.name;
           cor = feature.properties.eventtype;
-          console.log("cor", cor);
+          //console.log("cor", cor);
           //console.log("x:", x);
           //console.log("y:", y);
+          pontos.push({ 
+               x: x, 
+               y: y, 
+               raio: 5, 
+               cor: cores.get(cor), 
+               hover: false,
+               country: country,
+               description: description,
+               eventtype: eventtype,
+               episodealertlevel: episodealertlevel,
+               eventid: episodealertlevel,
+               fromdate: fromdate,
+               nomeEvento: nomeEvento
+          })
           desenharPonto(x, y, cores.get(cor));
      }
 
@@ -60,6 +98,51 @@ function desenharPonto(xIn, yIn, cor) {
      ctx.fill(); 
 }
 
+function encontrarPontoSobMouse(mouseX, mouseY) {
+     //const { x, y } = coordenadasToPixel(mouseX, mouseY, larguraNaPagina, alturaNaPagina);
+     for (let i = pontos.length - 1; i >= 0; i--) {
+          const p = pontos[i];
+          const { x, y } = coordenadasToPixel(p.x, p.y, larguraNaPagina, alturaNaPagina);
+          const dx = mouseX - x; //p.x;
+          const dy = mouseY - y; //p.y;
+          if (Math.sqrt(dx*dx + dy*dy) <= p.raio) {
+               return p;
+          }
+     }
+     return null;
+}
+
+canvas.addEventListener('mousemove', (e) => {
+     const rect = canvas.getBoundingClientRect();
+     const scaleX = canvas.width / rect.width;
+     const scaleY = canvas.height / rect.height;
+  
+     const mouseX = (e.clientX - rect.left) * scaleX;
+     const mouseY = (e.clientY - rect.top) * scaleY;
+  
+     const pontoSobMouse = encontrarPontoSobMouse(mouseX, mouseY);
+  
+     // Atualiza estados de hover
+     pontos.forEach(p => {
+          const estavaHover = p.hover;
+          p.hover = (p === pontoSobMouse);
+    
+          if (p.hover && !estavaHover) {
+               console.log(`Mouse sobre ponto em (${p.x}, ${p.y})`);
+               console.log("p: " + p);
+               console.log("p.country:" + p.country);
+               countryTxt.textContent = p.country;
+               descriptionTxt.textContent = p.description;
+               eventtypeTxt.textContent = p.eventtype;
+               episodealertlevelTxt.textContent = p.episodealertlevel;
+               eventidTxt.textContent = p.eventid;
+               fromdateTxt.textContent = p.fromdate;
+               nomeEventoTxt.textContent = p.nomeEvento;
+               
+          }
+     })
+});
+
 function pintaCoisas(larguraNaPagina, alturaNaPagina) {
      canvas.width = larguraNaPagina;
      canvas.height = alturaNaPagina;
@@ -74,13 +157,7 @@ function pintaCoisas(larguraNaPagina, alturaNaPagina) {
      //desenharPonto(0, -180);
 }
 
-const larguraImagem = 10800; // Largura da imagem em pixels
-const alturaImagem = 5400; // Altura da imagem em pixels 
 
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const imagem = document.getElementById('mapaImagem');
-const imgAltura = imagem.height;
 mapaImagem.src = "NE2_50M_SR_reduzido.png";
 mapaImagem.onload = function() {
      larguraNaPagina = 1200; // Largura da imagem na página em pixels
@@ -91,3 +168,4 @@ mapaImagem.onload = function() {
 }
         
 
+console.log(pontos);
