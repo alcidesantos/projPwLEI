@@ -25,6 +25,8 @@ let nomeEventoTxt = document.getElementById('nomeEvento');
 let imgAltura = imagem.height;
 let ctx = canvas.getContext('2d');
 
+let timeoutId = null;
+
 gdacsRequest(); 
 
 function gdacsRequest() {
@@ -139,7 +141,25 @@ canvas.addEventListener('mousemove', (e) => {
                fromdateTxt.textContent = p.fromdate;
                nomeEventoTxt.textContent = p.nomeEvento;
                
-          }
+
+               const conteudo = `
+                    <strong>${p.eventtype}</strong><br>
+                    País: ${p.country}<br>
+                    Severidade: ${p.severitytext}<br>
+                    Data: ${p.fromdate}
+               `;
+        
+               caixaInformacao.innerHTML = conteudo;
+               caixaInformacao.style.display = 'block';
+        
+               // Posicionar a tooltip perto do mouse
+               caixaInformacao.style.left = (e.clientX + 15) + 'px';
+               caixaInformacao.style.top = (e.clientY - 30) + 'px';
+          } 
+          if (timeoutId) clearTimeout(timeoutId);
+          timeoutId = setTimeout(() => {
+               caixaInformacao.style.display = 'none';
+          }, 3000);
      })
 });
 
@@ -166,6 +186,20 @@ mapaImagem.onload = function() {
      console.log( 'Imagem carregada e desenhada no canvas.' );
      pintaCoisas(larguraNaPagina, alturaNaPagina);
 }
-        
+    
+const caixaInformacao = document.createElement('div');
+caixaInformacao.style.position = 'absolute';
+caixaInformacao.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+caixaInformacao.style.color = 'white';
+caixaInformacao.style.padding = '8px 12px';
+caixaInformacao.style.borderRadius = '6px';
+caixaInformacao.style.fontSize = '12px';
+caixaInformacao.style.fontFamily = 'Arial, sans-serif';
+caixaInformacao.style.pointerEvents = 'none'; // Para não atrapalhar o mouse
+caixaInformacao.style.zIndex = '1000';
+caixaInformacao.style.display = 'none';
+caixaInformacao.style.maxWidth = '300px';
+caixaInformacao.style.boxShadow = '0 2px 10px rgba(0,0,0,0.3)';
+document.body.appendChild(caixaInformacao);
 
 console.log(pontos);
