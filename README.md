@@ -43,7 +43,11 @@ que é um projecto liderado por Nathaniel Vaughn Kelso and Tom Patterson. - Exis
 ### 20 de Maio
 - Permite filtrar os eventos a aparecer em função de um clic na cor ou texto da legenda.
 - Permite também filtrar os eventos a aparecer em função do mês do mesmo. Para tal clica-se no mês correspondente na caixa ao lado da legenda.
+- Actualizado README.
 - Terminada a primeira versão.
 
 ## A realizar numa nova versão.
 - Obter a mesma funcionalidade no google maps. 
+
+## Link para o Projecto
+https://alcidesantos.github.io/projPwLEI/
