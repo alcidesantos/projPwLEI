@@ -29,7 +29,7 @@
     border-radius: 6px;
     font-size: 14px;
     font-family: Arial, sans-serif;
-    pointer-events: none; 
+    pointer-events: auto;    /* importante: para receber os eventos */ 
     z-index: 1000;
     display: none;
     max-width: 300px;

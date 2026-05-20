@@ -19,6 +19,8 @@ let pontos = [];
 
 const larguraImagem = 10800; // Largura da imagem em pixels
 const alturaImagem = 5400; // Altura da imagem em pixels 
+const larguraNaPagina = 1200; // Largura da imagem na página em pixels
+const alturaNaPagina = (alturaImagem / larguraImagem) * larguraNaPagina;
 
 const canvas = document.getElementById('canvas');
 const imagem = document.getElementById('mapaImagem');
@@ -72,9 +74,10 @@ function processaResposta_do_gdacs( dados )
                raio: 5, 
                cor: cores.get(cor), 
                hover: false,
+               mostrar: true,
                country: country,
                description: description,
-               eventtype: eventtype,
+               eventtype: eventtype,  // tipo de evento
                episodealertlevel: episodealertlevel,
                eventid: eventid,
                fromdate: fromdate,
@@ -82,7 +85,21 @@ function processaResposta_do_gdacs( dados )
           })
           desenharPonto(x, y, cores.get(cor));
      }
+}
 
+function filtrarPorTipoDeEvento (tipoEvento) {
+     for (const ponto of pontos) {
+          if (ponto['eventtype'] == tipoEvento) {
+               console.log("ponto['mostrar'] antes é " + ponto['mostrar']);
+               if ( ponto['mostrar'] ) {
+                    ponto['mostrar'] = false;
+                    console.log("ponto['mostrar'] passou a " + ponto['mostrar']);
+               } else {
+                    ponto['mostrar'] = true;
+                    console.log("ponto['mostrar'] passou a " + ponto['mostrar']);
+               }
+          }
+     }
 }
 
 function coordenadasToPixel(latitude, longitude, largura, altura) {
@@ -168,10 +185,17 @@ function pintaCoisas(larguraNaPagina, alturaNaPagina) {
      //desenharPonto(0, -180);
 }
 
+function redesenharMapaCompleto() {
+     pintaCoisas(larguraNaPagina, alturaNaPagina);
+     for (const ponto of pontos) {
+          if (ponto['mostrar']) {
+               desenharPonto(ponto['x'], ponto['y'], ponto['cor']);
+          }
+     }
+}
+
 mapaImagem.src = "NE2_50M_SR_reduzido.png";
 mapaImagem.onload = function() {
-     larguraNaPagina = 1200; // Largura da imagem na página em pixels
-     alturaNaPagina = (alturaImagem / larguraImagem) * larguraNaPagina;
      ctx.drawImage(imagem, 0, 0, larguraNaPagina, alturaNaPagina);
      console.log( 'Imagem carregada e desenhada no canvas.' );
      pintaCoisas(larguraNaPagina, alturaNaPagina);
@@ -186,19 +210,65 @@ let conteudoLegenda = '<strong>Legenda:</strong>';
 for (const [codigo, descricao] of descricaoSituacoes) {
     const cor = cores.get(codigo);
     conteudoLegenda += `
-        <div style="margin-bottom: 5px;">
+        <div id="legenda${codigo}" style="margin-bottom: 5px;">
             <span style="display: inline-block; width: 10px; height: 10px; background-color: ${cor}; margin-right: 8px; border: 1px solid #999;"></span>
             ${descricao}
         </div>
     `;
 }
 
+console.log(conteudoLegenda);
+
+console.log("1 - Antes de criar legenda");
+console.log("conteudoLegenda:", conteudoLegenda);
+
 const legenda = document.createElement('div');
 legenda.className = 'legenda';
-document.body.appendChild(legenda);
 legenda.innerHTML = conteudoLegenda;
 legenda.style.display = 'block';
 legenda.style.left = '50px';
 legenda.style.top = '480px';
+document.body.appendChild(legenda);
+
+console.log("2 - Legenda adicionada ao DOM");
+
+for (const [codigo, descricao] of descricaoSituacoes) {
+     const elemento = document.getElementById(`legenda${codigo}`);
+     console.log(`Elemento legenda${codigo}:`, elemento ? "Encontrado" : "NÃO encontrado");
+}
+
+console.log("3 - Fim de debug");
+
+
+for (const [codigo, descricao] of descricaoSituacoes) {
+     console.log("dentro do for");
+     const itemLegenda = document.getElementById(`legenda${codigo}`);
+     if (itemLegenda) {
+          console.log("dentro de itemLegenda");
+          itemLegenda.addEventListener('click', () => {
+               console.log(`Clicou em: ${descricao} (${codigo})`);
+               filtrarPorTipoDeEvento(codigo);
+               redesenharMapaCompleto();
+               const divLegenda = document.getElementById(`legenda${codigo}`);
+               if (divLegenda) {
+                    const span = divLegenda.querySelector('span');
+                    if( span.style.backgroundColor == 'white' ) {
+                         span.style.backgroundColor = cores.get(codigo);
+                    } else {
+                         span.style.backgroundColor = 'white';
+                    }
+               }
+          });
+     }
+}
 
 console.log(pontos);
+console.log("termina");
+
+/*
+setTimeout(() => {
+    console.log('Passaram-se 10 segundos!');
+    limparTodosPontos();
+    // Seu código aqui
+}, 10000);
+*/
