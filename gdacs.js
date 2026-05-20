@@ -17,6 +17,8 @@ descricaoSituacoes.set('DR', 'Seca');          // seca: amarelo
 
 let pontos = [];  
 
+let anoMes = [];   // seria preferivel usar set mas não funciona bem no chrome
+
 const larguraImagem = 10800; // Largura da imagem em pixels
 const alturaImagem = 5400; // Altura da imagem em pixels 
 const larguraNaPagina = 1200; // Largura da imagem na página em pixels
@@ -68,13 +70,19 @@ function processaResposta_do_gdacs( dados )
           //console.log("cor", cor);
           //console.log("x:", x);
           //console.log("y:", y);
+          const anoMesLocal = fromdate.substring(0, 7);
+          if (! anoMes.includes(anoMesLocal)) {  // tenho que fazer isto porque não está
+               inserirOrdenado(anoMes, anoMesLocal); // a funcionar bem o set nem o array
+          }
           pontos.push({ 
                x: x, 
                y: y, 
                raio: 5, 
                cor: cores.get(cor), 
                hover: false,
-               mostrar: true,
+               mostrarPorLegenda: true,
+               mostrarPorAnoMes: true,
+               anoMes: anoMesLocal,
                country: country,
                description: description,
                eventtype: eventtype,  // tipo de evento
@@ -85,18 +93,47 @@ function processaResposta_do_gdacs( dados )
           })
           desenharPonto(x, y, cores.get(cor));
      }
+     criarSelectorDatas();
+}
+
+// tenho que fazer isto porque os metodos do set e o array não estão a funcionar bem
+function inserirOrdenado(arr, valor) {
+     let left = 0;
+     let right = arr.length;
+     while (left < right) {
+          const mid = Math.floor((left + right) / 2);
+          if (arr[mid] < valor) {
+               left = mid + 1;
+          } else {
+               right = mid;
+          }
+     }
+     arr.splice(left, 0, valor);
+     return arr;
 }
 
 function filtrarPorTipoDeEvento (tipoEvento) {
      for (const ponto of pontos) {
           if (ponto['eventtype'] == tipoEvento) {
-               console.log("ponto['mostrar'] antes é " + ponto['mostrar']);
-               if ( ponto['mostrar'] ) {
-                    ponto['mostrar'] = false;
-                    console.log("ponto['mostrar'] passou a " + ponto['mostrar']);
+               //console.log("ponto['mostrarPorLegenda'] antes é " + ponto['mostrarPorLegenda']);
+               if ( ponto['mostrarPorLegenda'] ) {
+                    ponto['mostrarPorLegenda'] = false;
+                    //console.log("ponto['mostrarPorLegenda'] passou a " + ponto['mostrarPorLegenda']);
                } else {
-                    ponto['mostrar'] = true;
-                    console.log("ponto['mostrar'] passou a " + ponto['mostrar']);
+                    ponto['mostrarPorLegenda'] = true;
+                    //console.log("ponto['mostrarPorLegenda'] passou a " + ponto['mostrarPorLegenda']);
+               }
+          }
+     }
+}
+
+function filtrarPorAnoMes(esteAnoMes) {
+     for (const ponto of pontos) {
+          if (ponto['anoMes'] == esteAnoMes) {
+               if (ponto['mostrarPorAnoMes'] == false) {
+                    ponto['mostrarPorAnoMes'] = true;
+               } else {
+                    ponto['mostrarPorAnoMes'] = false;
                }
           }
      }
@@ -188,8 +225,56 @@ function pintaCoisas(larguraNaPagina, alturaNaPagina) {
 function redesenharMapaCompleto() {
      pintaCoisas(larguraNaPagina, alturaNaPagina);
      for (const ponto of pontos) {
-          if (ponto['mostrar']) {
+          //console.log("dentro de ponto of pontos ponto['mostrarPorLegenda']: ", ponto['mostrarPorLegenda']);
+          if (ponto['mostrarPorLegenda'] && ponto['mostrarPorAnoMes']) {
+          //if ( ponto['mostrarPorLegenda'] ) {
+               //console.log("ponto['mostrarPorLegenda']: ", ponto['mostrarPorLegenda']);
                desenharPonto(ponto['x'], ponto['y'], ponto['cor']);
+          }
+     }
+}
+
+// afinal o problema era outro: o gdacs ainda não estava carregado... 
+function criarSelectorDatas() {
+     console.log("anoMes:" , anoMes);
+
+     let conteudoAnoMes = '<strong>Meses:</strong>';
+     console.log(conteudoAnoMes);
+     console.log("anoMes2:" , anoMes[0]);
+     for (const esteAnoMes of anoMes) {
+          console.log("esteAnoMes:" , esteAnoMes);
+          conteudoAnoMes += `
+               <div id="${esteAnoMes}" style="margin-bottom: 5px;">
+                    <span style="display: inline-block; width: 10px; height: 10px; background-color: white; margin-right: 8px; border: 1px solid #999;"></span>
+                    ${esteAnoMes}
+               </div>
+          `;
+     }
+
+     const intervalos = document.createElement('div');
+     intervalos.className = 'intervalos';
+     intervalos.innerHTML = conteudoAnoMes;
+     intervalos.style.display = 'block';
+     intervalos.style.left = '20px';
+     intervalos.style.top = '328px';
+     document.body.appendChild(intervalos);
+     
+     for (const esteAnoMes of anoMes) {
+          const itemAnoMes = document.getElementById(esteAnoMes);
+          if (itemAnoMes) {
+               itemAnoMes.addEventListener('click', () => {
+                    filtrarPorAnoMes(esteAnoMes);
+                    redesenharMapaCompleto();
+                    const divAnoMes = document.getElementById(esteAnoMes);
+                    if (divAnoMes) {
+                         const span = divAnoMes.querySelector('span');
+                         if( span.style.backgroundColor == 'white' ) {
+                              span.style.backgroundColor = 'black';
+                         } else {
+                              span.style.backgroundColor = 'white';
+                         }
+                    }
+               });
           }
      }
 }
@@ -208,13 +293,13 @@ document.body.appendChild(caixaInformacao);
 let conteudoLegenda = '<strong>Legenda:</strong>';
 
 for (const [codigo, descricao] of descricaoSituacoes) {
-    const cor = cores.get(codigo);
-    conteudoLegenda += `
-        <div id="legenda${codigo}" style="margin-bottom: 5px;">
-            <span style="display: inline-block; width: 10px; height: 10px; background-color: ${cor}; margin-right: 8px; border: 1px solid #999;"></span>
-            ${descricao}
-        </div>
-    `;
+     const cor = cores.get(codigo);
+     conteudoLegenda += `
+          <div id="legenda${codigo}" style="margin-bottom: 5px;">
+               <span style="display: inline-block; width: 10px; height: 10px; background-color: ${cor}; margin-right: 8px; border: 1px solid #999;"></span>
+               ${descricao}
+          </div>
+     `;
 }
 
 console.log(conteudoLegenda);
@@ -226,7 +311,7 @@ const legenda = document.createElement('div');
 legenda.className = 'legenda';
 legenda.innerHTML = conteudoLegenda;
 legenda.style.display = 'block';
-legenda.style.left = '50px';
+legenda.style.left = '130px';
 legenda.style.top = '480px';
 document.body.appendChild(legenda);
 
@@ -239,7 +324,6 @@ for (const [codigo, descricao] of descricaoSituacoes) {
 
 console.log("3 - Fim de debug");
 
-
 for (const [codigo, descricao] of descricaoSituacoes) {
      console.log("dentro do for");
      const itemLegenda = document.getElementById(`legenda${codigo}`);
@@ -251,7 +335,9 @@ for (const [codigo, descricao] of descricaoSituacoes) {
                redesenharMapaCompleto();
                const divLegenda = document.getElementById(`legenda${codigo}`);
                if (divLegenda) {
+                    console.log("dentro de divLegenda");
                     const span = divLegenda.querySelector('span');
+                    console.log(span.style.backgroundColor);
                     if( span.style.backgroundColor == 'white' ) {
                          span.style.backgroundColor = cores.get(codigo);
                     } else {
@@ -262,7 +348,20 @@ for (const [codigo, descricao] of descricaoSituacoes) {
      }
 }
 
-console.log(pontos);
+
+
+
+
+
+
+
+
+
+
+
+
+
+console.log("pontos: ", pontos);
 console.log("termina");
 
 /*
